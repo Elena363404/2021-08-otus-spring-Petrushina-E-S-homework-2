@@ -1,2 +1,2 @@
-# 2021-08-otus-spring-Petrushina-E-S-homework-2
+# 2021-08-otus-spring-homework-2-Petrushina-E-S
 Homework-2
