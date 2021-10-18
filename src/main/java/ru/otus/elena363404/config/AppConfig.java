@@ -14,14 +14,17 @@ import java.sql.SQLException;
 @Configuration
 public class AppConfig {
 
+  int cntAnswerForPassTest;
+
   @Bean
   public QuestionDaoCsv questionDaoCsv(@Value("${quiz.path}") String quizPath) throws SQLException {
     return new QuestionDaoCsv(quizPath);
   }
 
   @Bean
-  QuestionService questionService (QuestionDao dao) {
-   return new QuestionService(dao);
+  QuestionService questionService (QuestionDao dao, @Value("${cntAnswerForPassTest}") int cntAnswerForPassTest) {
+    return new QuestionService(dao, cntAnswerForPassTest);
   }
+
 
 }

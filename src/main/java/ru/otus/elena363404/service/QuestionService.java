@@ -1,71 +1,80 @@
 package ru.otus.elena363404.service;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 import ru.otus.elena363404.dao.QuestionDao;
 import ru.otus.elena363404.domain.Option;
 import ru.otus.elena363404.domain.Question;
+import ru.otus.elena363404.exception.QuestionReadingException;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-import static ru.otus.elena363404.service.SystemConsoleService.systemOutPrintConsole;
-import static ru.otus.elena363404.service.SystemConsoleService.systemOutPrintlnConsole;
-
-@Configuration
+@Service
 public class QuestionService {
 
-  @Value("${cntRightAnswers}")
-  private Integer cntRightAnswers;
-
+  private final int cntAnswerForPassTest;
   private final QuestionDao dao;
 
-  public QuestionService(QuestionDao dao) {
+  public QuestionService(QuestionDao dao, int cntAnswerForPassTest) {
     this.dao = dao;
+    this.cntAnswerForPassTest = cntAnswerForPassTest;
   }
 
-  public void printAllQuestions() {
+  private IOService ioService;
 
-    List<Question> questionList = new ArrayList<>();
-    try {
-      questionList = dao.getAllQuestions();
-    } catch (Exception err) {
-      systemOutPrintlnConsole("Error while reading file");
-    }
+  public void printAllQuestions() throws QuestionReadingException {
 
-    Integer cntRightAnswer = 0;
+    int cntRightAnswer = 0;
     StringBuilder sbAnswers = new StringBuilder();
+    ioService = new ConsoleIOService();
 
-    try (Scanner in = new Scanner(System.in)) {
-      for (int i = 0; i < questionList.size(); i++) {
-        String question = questionList.get(i).getQuestion();
-        int answer = questionList.get(i).getAnswer().getAnswer();
-        List<Option> optionList = questionList.get(i).getOptions();
-        StringBuilder options = new StringBuilder();
-        for (int j = 0; j < optionList.size(); j++) {
-          Option option = optionList.get(j);
-          options = options.append(option.getId()).append(".").append(option.getOption()).append("\n");
-        }
-        systemOutPrintlnConsole(question);
-        systemOutPrintlnConsole(options.toString());
+    List<Question> questionList = getQuestionList();
+    int questionListSize = questionList.size();
 
-        systemOutPrintConsole("Input num of answer: ");
-        int inAnswer = in.nextInt();
-        if (answer == inAnswer) {
-          cntRightAnswer = cntRightAnswer + 1;
-        }
-        sbAnswers = sbAnswers.append(questionList.get(i).getNum()).append(".");
+    for (int i = 0; i < questionList.size(); i++) {
+      String question = questionList.get(i).getQuestion();
+      int answer = questionList.get(i).getAnswer().getAnswer();
+      List<Option> optionList = questionList.get(i).getOptions();
+
+      String options = getOptions(optionList);
+
+      ioService.out(question);
+      ioService.out(options);
+      ioService.out("Input num of answer: ");
+
+      int inAnswer = ioService.readInt();
+
+      if (answer == inAnswer) {
+        cntRightAnswer = cntRightAnswer + 1;
       }
-    }
-    if (cntRightAnswer >= cntRightAnswers) {
-      systemOutPrintlnConsole("\nCongratulations! You have successfully passed the test. " +  + cntRightAnswer + "/" + questionList.size());
-    } else {
-      systemOutPrintlnConsole("\nYou failed test! " + cntRightAnswer + "/" + questionList.size());
+      sbAnswers = sbAnswers.append(questionList.get(i).getNum()).append(".");
     }
 
+    sendResultTestToConsole(cntRightAnswer, questionListSize);
+
+  }
+
+  private List<Question> getQuestionList() throws QuestionReadingException {
+    List<Question> questionList = dao.getAllQuestions();
+    return questionList;
+  }
+
+  private String getOptions(List<Option> optionList) {
+    StringBuilder options = new StringBuilder();
+    for (int j = 0; j < optionList.size(); j++) {
+      Option option = optionList.get(j);
+      options = options.append(option.getId()).append(".").append(option.getOption()).append("\n");
+    }
+    return options.toString();
+  }
+
+  private void sendResultTestToConsole (int cntRightAnswer, int questionListSize) {
+    if (cntRightAnswer >= cntAnswerForPassTest) {
+
+      ioService.out("\nCongratulations! You have successfully passed the test. " +  + cntRightAnswer + "/" + questionListSize);
+    } else {
+      ioService.out("\nYou failed test! " + cntRightAnswer + "/" + questionListSize);
+    }
   }
 
 }
