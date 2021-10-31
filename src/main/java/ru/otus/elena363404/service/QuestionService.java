@@ -1,32 +1,27 @@
 package ru.otus.elena363404.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import ru.otus.elena363404.dao.QuestionDao;
 import ru.otus.elena363404.domain.Option;
 import ru.otus.elena363404.domain.Question;
 import ru.otus.elena363404.exception.QuestionReadingException;
-
 import java.util.List;
 
-@Service
 public class QuestionService {
 
   private final int cntAnswerForPassTest;
   private final QuestionDao dao;
+  private final IOService ioService;
 
-  public QuestionService(QuestionDao dao, int cntAnswerForPassTest) {
+  public QuestionService(QuestionDao dao, int cntAnswerForPassTest, ConsoleIOService consoleIOService) {
     this.dao = dao;
     this.cntAnswerForPassTest = cntAnswerForPassTest;
+    this.ioService = consoleIOService;
   }
 
-  private IOService ioService;
 
   public void printAllQuestions() throws QuestionReadingException {
 
     int cntRightAnswer = 0;
-    StringBuilder sbAnswers = new StringBuilder();
-    ioService = new ConsoleIOService();
 
     List<Question> questionList = getQuestionList();
     int questionListSize = questionList.size();
@@ -47,10 +42,9 @@ public class QuestionService {
       if (answer == inAnswer) {
         cntRightAnswer = cntRightAnswer + 1;
       }
-      sbAnswers = sbAnswers.append(questionList.get(i).getNum()).append(".");
     }
 
-    sendResultTestToConsole(cntRightAnswer, questionListSize);
+    sendResultTest(cntRightAnswer, questionListSize);
 
   }
 
@@ -68,7 +62,7 @@ public class QuestionService {
     return options.toString();
   }
 
-  private void sendResultTestToConsole (int cntRightAnswer, int questionListSize) {
+  private void sendResultTest (int cntRightAnswer, int questionListSize) {
     if (cntRightAnswer >= cntAnswerForPassTest) {
 
       ioService.out("\nCongratulations! You have successfully passed the test. " +  + cntRightAnswer + "/" + questionListSize);

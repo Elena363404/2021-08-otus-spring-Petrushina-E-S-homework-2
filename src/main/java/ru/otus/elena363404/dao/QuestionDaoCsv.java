@@ -1,27 +1,17 @@
 package ru.otus.elena363404.dao;
 
-import org.springframework.context.annotation.Configuration;
 import ru.otus.elena363404.domain.Answer;
 import ru.otus.elena363404.domain.Option;
 import ru.otus.elena363404.domain.Question;
 import ru.otus.elena363404.exception.QuestionReadingException;
-import ru.otus.elena363404.service.ConsoleIOService;
-import ru.otus.elena363404.service.IOService;
-
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.sql.*;
-import java.sql.Date;
 import java.util.*;
 
 public class QuestionDaoCsv implements QuestionDao {
 
   private final String quizPath;
 
-  public QuestionDaoCsv(String quizPath) throws SQLException {
+  public QuestionDaoCsv(String quizPath) {
     this.quizPath = quizPath;
   }
 
